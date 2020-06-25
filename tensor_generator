@@ -1,0 +1,109 @@
+# Creates an nth dimensional tensor and allows input and read. 
+
+import copy
+from random import randint
+
+def create_tensor(sizes):
+    """
+    Creates nth dimensional tensor.
+    The number of dimensions is indicated by list length, with size of each axis determined by element value
+    The input must be a list of non-0 integers.
+    Return value is tensor of nth dimension
+    """
+
+    # This is required to ensure that the input and data extraction are input in a consistent format
+    # for the user - without this the list direction would need to be inverted elsewhere
+    sizes = sizes[::-1]
+    
+    # Avoiding recursion - didn't want to edit the variable that is being recurred
+    for count, axis in enumerate(sizes):
+        # Intialise list with 0 values - there's a way to initialise an empty list but it's hideous
+        if count == 0:
+            tensor = [0 for x in range(axis)]
+            continue
+
+        # In each loop it is taking the previous structure and creating a list built with that structure as each element
+        # Had an issue with comprehension only creating references. Required a deep copy to resolve.  
+        tensor = [copy.deepcopy(tensor) for x in range(axis)]
+    
+    return tensor
+        
+
+def put_tensor(tensor, value, coords):
+    """
+    Use to iterate over coordinates (coords) until the deepest/last indice is reached
+    This will place the value at this final indice
+    No return value. 
+    """
+
+    # This check to ensure we are not already at final indice
+    if len(coords) > 1:
+    # If final index is nested deeper (futher along list) then recur with the next int as the first indice
+        return put_tensor(tensor[coords[0]], value, coords[1:])
+    # When only 1 indice/int from list left, this provides final index at deepest nesting point
+    tensor[coords[0]] = value
+    
+    
+def get_tensor(tensor, coords):
+    """
+    Use to iterate over coordinates (coords) until the deepest/last indice is reached
+    This will place the value at this final indice
+    Return is the value at nth position of tensor
+    """
+
+
+    # Check if we've reached end of coords
+    if len(coords) > 1:
+        # If final index is nested deeper (futher along list) then recur with the next int as the first indice
+        return get_tensor(tensor[coords[0]], coords[1:])
+    # When only 1 indice/int from list left, this provides final index at deepest nesting point
+    return tensor[coords[0]] 
+
+def main():
+    """
+    Contains two types of test:
+    1) Hard coded test of 3 axes, with a set number input
+    2) Test of 4 axes, with random inputs.
+    The only conditions applied are:
+    - that 0 is not a viable dimension/axes size and
+    - compensation to prevent off by 1 errors
+    No return value
+    """
+
+    # I was unclear if this was to be the input (list of ints) but ran with it as it seemed logical
+    print("Single test: 3 axes, one hard coded test variable")
+    initial_array = [4, 5, 6]  
+    
+    tensor = create_tensor(initial_array)
+
+    number = 12
+   
+    put_tensor(tensor, number, coords = [1, 2, 3])
+
+    result = get_tensor(tensor, coords = [1, 2, 3])
+
+    print(result == number)
+
+    print("Multiple Tests: 4 indexes, random variables")
+    for loop in range(20):
+        # 0 index value produces IndexError at this stage
+        x, y, z, a = randint(1,100), randint(1, 100), randint(1, 100), randint(1, 100)
+        
+        initial_array = [x, y, z, a]  
+        
+        tensor = create_tensor(initial_array)
+
+        number = randint(1, 100)
+
+        # Minus 1 necessary to avoid out of bounds (off by 1 error)
+        _x, _y, _z, _a = randint(0, x - 1), randint(0, y - 1), randint(0, z - 1), randint(0, a - 1)
+
+        put_tensor(tensor, number, coords = [_x, _y, _z, _a])
+
+        result = get_tensor(tensor, coords = [_x, _y, _z, _a])
+
+        print(f"[*] Test {loop}: {result == number}")
+    
+
+if __name__ == "__main__":
+    main()

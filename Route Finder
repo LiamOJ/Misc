@@ -1,0 +1,89 @@
+# Basic route testing script
+
+def single_step_route(start, end, routes):
+    """Use to take a start and end point on the route map and
+    return True if there is a link, False if there is not.
+    Works only for single step routes. 
+    """
+    
+    # Does a check if the end appears in the starts route list
+    return bool(end in routes[start])
+
+def simple_check(start, end, routes):
+    """Use to perform a simple test if a connection is possible between
+    two stations removed by one stop. 
+    Return true or false
+    """
+
+    if single_step_route(start, end, routes):
+        return f"The route is {start} to {end}"
+
+    for station1 in routes[start]:
+        for station2 in routes[end]:
+            if station1 == station2:
+                result = f"The route is {start} to {station2} to {end}"
+                return result # Did this wrong originally, return wasn't here
+            else:
+                result = f"Apologies, there is no route between {start} and {end}"
+
+    return result
+
+def find_path(start, end, routes, used):
+    """Creates a generator function that will yield the final connecting
+    path and have the starting point (previous station) inserted
+    at begining of the yielded result as it falls back through recursions
+    """
+
+    # Add station to used list to limit recuring to already been-to stations. 
+    used.append(start)
+
+    # iterate over stations accessible from current station
+    for station in routes[start]:
+        # if we've already been there, don't use it
+        if station in used:
+            continue
+        # if it's where we're looking for yield result
+        # Recursion will run until it finds this 'end' station
+        if station == end:
+            yield [start, end] 
+        else:
+            for path in find_path(station, end, routes, used):
+                yield [start] + path
+
+        
+def main():
+
+    # Dictionary to hold data for all stations
+    stations = {}
+
+    # Build station data, direct link only
+    stations["Edinburgh"] = ["Aberdeen", "Glasgow", "London"]
+    stations["Glasgow"] = ["Edinburgh", "London"]
+    stations["Aberdeen"] = ["Edinburgh"]
+    stations["London"] = ["Cardiff", "Glasgow", "Edinburgh"]
+    stations["Belfast"] = [""]
+    stations["Cardiff"] = ["London"] # Missed this before
+    
+    direct_route = single_step_route('London', 'Aberdeen', stations)
+
+    print(direct_route)
+
+    start = "London"
+    end = "Aberdeen"
+    print(f"[!] Test for {start} to {end}")
+
+    two_step = simple_check(start, end, stations)
+    
+    print(two_step)
+
+    used = []
+    # must use for loop to iterare over generator object
+    for path in find_path(start, end, stations, used):
+        print(path)
+
+
+    
+
+if __name__ == "__main__":
+    main()
+

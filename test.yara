@@ -10,5 +10,5 @@ rule webshell_iMHaPFtp_2  : webshell{
 		$s9 = "return base64_decode('R0lGODlhEQANAJEDAMwAAP///5mZmf///yH5BAHoAwMALAAAAAARAA0AAA"
 		$10 = "test string - please detect me"
 	condition:
-		1 of them
+		$10
 }
